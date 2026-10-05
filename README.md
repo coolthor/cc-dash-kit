@@ -2,6 +2,8 @@
 
 > Install this Claude Code dashboard for me: https://github.com/coolthor/cc-dash-kit (follow INSTALL.md in the repo)
 
+Claude Code: follow [INSTALL.md](INSTALL.md) and ask which installation scope to use before installing.
+
 Your Claude Code status, beside the conversation. · [繁體中文](README.zh-TW.md)
 
 ![Claude Code conversation with the dashboard in a right-hand sidebar](docs/images/terminal-en.png)
