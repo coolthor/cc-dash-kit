@@ -1,10 +1,33 @@
 {
   "refreshMs": 30000,
   "cards": [
-    { "id": "quota" },
-    { "id": "session" },
-    { "id": "disk", "path": "/" },
-    { "id": "gpu" },
-    { "id": "http-probe", "title": "Local model", "url": "http://localhost:11434/api/tags" }
-  ]
+    {
+      "id": "quota"
+    },
+    {
+      "id": "session"
+    },
+    {
+      "id": "disk",
+      "path": "/"
+    },
+    {
+      "id": "gpu"
+    },
+    {
+      "id": "http-probe",
+      "title": "Local services",
+      "endpoints": [
+        {
+          "name": "Ollama",
+          "url": "http://localhost:11434/api/tags"
+        },
+        {
+          "name": "LM Studio",
+          "url": "http://localhost:1234/v1/models"
+        }
+      ]
+    }
+  ],
+  "locale": "auto"
 }

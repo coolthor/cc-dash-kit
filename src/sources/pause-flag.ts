@@ -1,9 +1,10 @@
+import { t } from '../i18n'
 import type { Source } from './types'
 import { identityCard } from './types'
 
 export const pauseFlag: Source = {
-  id: 'pause-flag', title: '派工暫停', detect: async (_, config) => Boolean(config.path),
-  sample: async ($, config) => ({ rows: [{ label: '派工', value: await $.fs.exists(config.path) ? '暫停' : '可用' }] }),
+  id: 'pause-flag', title: t('pauseFlag'), detect: async (_, config) => Boolean(config.path),
+  sample: async ($, config) => ({ rows: [{ label: t('dispatch'), value: await $.fs.exists(config.path) ? t('paused') : t('available') }] }),
   card: identityCard,
 }
 

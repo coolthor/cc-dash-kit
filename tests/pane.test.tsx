@@ -79,3 +79,40 @@ test('pause button receives keyboard focus in the opened pane', async ($, on) =>
   expect(tree.includes('"autoFocus":true')).toEqual(true)
   await ui.unmount()
 })
+
+test('LANG selects panel text and config locale takes precedence', async ($, on) => {
+  const config = { locale: 'zh-TW', cards: [{ id: 'quota' }, { id: 'session' }] }
+  base(on, config)
+  on('process.run', (_: any, e: any) => ({ value: { exitCode: e.argv[0] === 'printenv' && e.argv[1] === 'LANG' ? 0 : 1, stdout: e.argv[1] === 'LANG' ? 'en_US.UTF-8' : '', stderr: '' } }))
+  await $.command.run({ command: 'cc-dash', args: '' })
+  const ui = await $.ui.mount({ ...PANE, surface: 'terminal' })
+  const tree = JSON.stringify(await ui.drawn())
+  expect(tree.includes('Claude 額度')).toEqual(true)
+  expect(tree.includes('5 小時')).toEqual(true)
+  expect(tree.includes('Claude usage')).toEqual(false)
+  await ui.unmount()
+})
+
+test('English LANG draws English zero-config labels', async ($, on) => {
+  base(on)
+  on('process.run', (_: any, e: any) => ({ value: { exitCode: e.argv[0] === 'printenv' && e.argv[1] === 'LANG' ? 0 : 1, stdout: e.argv[1] === 'LANG' ? 'en_US.UTF-8' : '', stderr: '' } }))
+  await $.command.run({ command: 'cc-dash', args: '' })
+  const ui = await $.ui.mount({ ...PANE, surface: 'terminal' })
+  const tree = JSON.stringify(await ui.drawn())
+  expect(tree.includes('Claude usage')).toEqual(true)
+  expect(tree.includes('5 hours')).toEqual(true)
+  expect(tree.includes('目前 Session')).toEqual(false)
+  await ui.unmount()
+})
+
+test('Chinese LANG draws Chinese zero-config labels', async ($, on) => {
+  base(on)
+  on('process.run', (_: any, e: any) => ({ value: { exitCode: e.argv[0] === 'printenv' && e.argv[1] === 'LANG' ? 0 : 1, stdout: e.argv[1] === 'LANG' ? 'zh_TW.UTF-8' : '', stderr: '' } }))
+  await $.command.run({ command: 'cc-dash', args: '' })
+  const ui = await $.ui.mount({ ...PANE, surface: 'terminal' })
+  const tree = JSON.stringify(await ui.drawn())
+  expect(tree.includes('Claude 額度')).toEqual(true)
+  expect(tree.includes('5 小時')).toEqual(true)
+  expect(tree.includes('Current session')).toEqual(false)
+  await ui.unmount()
+})

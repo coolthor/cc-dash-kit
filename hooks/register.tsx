@@ -2,11 +2,11 @@ import { atom, read, update } from 'claude-code'
 import type { Register } from 'claude-code'
 import { DEFAULT_CONFIG, parseConfig } from '../src/config'
 import type { DashConfig } from '../src/config'
-import { sources } from '../src/sources'
 import type { CardData, SourceConfig } from '../src/sources/types'
 import { setPaused } from '../src/sources/pause-flag'
 import { collectSource } from '../src/sources/collect'
 import { Card, StatusDot } from '../src/ui/components'
+import { parseLocale, setLocale, t } from '../src/i18n'
 
 const PANE = 'cc-dash'
 const snapshot = atom({ plugin: 'cc-dash-kit', key: 'snapshot' } as const, {} as Record<string, CardData>)
@@ -14,6 +14,7 @@ let config: DashConfig = DEFAULT_CONFIG
 let configError: string | null = null
 let started = false
 let pauseToolRegistered = false
+let detectedLocale: 'en' | 'zh-TW' = 'en'
 
 async function loadConfig($: any) {
   const path = `${$.plugin.root}/dash.config.json`
@@ -37,7 +38,7 @@ async function sampleOne($: any, card: SourceConfig): Promise<CardData | null> {
       clock: { sleep: (ms: number) => $.clock.sleep(ms) },
     }, card)
   } catch (error) {
-    return { rows: [], error: `讀取失敗：${String(error).slice(0, 100)}` }
+    return { rows: [], error: `${t('loadFailed')}: ${String(error).slice(0, 100)}` }
   }
 }
 
@@ -45,8 +46,9 @@ async function refresh($: any) {
   try { config = await loadConfig($); configError = null }
   catch (error) {
     config = DEFAULT_CONFIG
-    configError = `設定錯誤：${String(error).slice(0, 100)}`
+    configError = `${t('configFailed')}: ${String(error).slice(0, 100)}`
   }
+  setLocale(config.locale && config.locale !== 'auto' ? config.locale : detectedLocale)
   if (config.cards.some(card => card.id === 'pause-flag') && !pauseToolRegistered) {
     await registerPauseTool($)
     pauseToolRegistered = true
@@ -55,9 +57,25 @@ async function refresh($: any) {
   await update($, snapshot, () => Object.fromEntries(pairs.filter(([, data]) => data !== null)))
 }
 
+async function detectLocale($: any): Promise<'en' | 'zh-TW'> {
+  for (const key of ['LC_ALL', 'LC_MESSAGES', 'LANG']) {
+    try {
+      const result = await $.process.run(['printenv', key], { timeoutMs: 1000 })
+      if (result.exitCode === 0 && result.stdout.trim()) return parseLocale(result.stdout.trim()) || 'en'
+    } catch {}
+  }
+  try {
+    const result = await $.process.run(['defaults', 'read', '-g', 'AppleLanguages'], { timeoutMs: 1000 })
+    if (result.exitCode === 0) return parseLocale(result.stdout.match(/["']?([a-z]{2}(?:[-_][A-Za-z]+)?)/i)?.[1]) || 'en'
+  } catch {}
+  return 'en'
+}
+
 async function start($: any) {
   if (started) return
   started = true
+  detectedLocale = await detectLocale($)
+  setLocale(detectedLocale)
   void refresh($)
   $.clock.every(config.refreshMs, () => void refresh($))
 }
@@ -66,16 +84,18 @@ export const register: Register = on => {
   on('session.start', async ($, e, next) => {
     await $.command.register({ name: 'cc-dash', description: 'Open the dashboard' })
     await start($)
-    void $.ui.open({ id: PANE, title: 'Dashboard' }).catch(() => {})
+    if (e.viewport?.isFullscreen || e.surface === 'desktop')
+      void $.ui.open({ id: PANE, title: t('dashboard'), placement: 'dock' }).catch(() => {})
     return next(e)
   })
 
-  on('command.run', { command: 'cc-dash' }, async $ => {
+  on('command.run', { command: 'cc-dash' }, async ($, e) => {
     await start($)
     await refresh($)
     await $.ui.close({ id: PANE })
-    const result = await $.ui.open({ id: PANE, title: 'Dashboard', focus: true })
-    return { text: result.isPlaced ? 'Dashboard opened.' : `Dashboard waiting: ${result.reason || 'pane unavailable'}` }
+    const fullscreen = e.viewport?.isFullscreen || e.surface === 'desktop'
+    const result = await $.ui.open({ id: PANE, title: t('dashboard'), placement: fullscreen ? 'dock' : 'inline', focus: true })
+    return { text: fullscreen ? (result.isPlaced ? t('opened') : `${t('waiting')}: ${result.reason || 'pane unavailable'}`) : t('fullscreenHint') }
   })
 
   on('tool.call', { tool: 'mcp__cc-dash-kit__pause_status' }, async $ => {
@@ -102,13 +122,14 @@ export const register: Register = on => {
       {config.cards.map(card => {
         const item = data[card.id]
         if (!item) return null
-        const extra = card.id === 'pause-flag' ? <Button key={`toggle-${card.id}`} autoFocus label={item.rows[0]?.value === '暫停' ? '恢復' : '暫停'} onPress={async () => {
-          try { await setPaused({ fs: { write: (path: string, content: string) => $.fs.write(path, content) }, process: { run: (argv: string[], options: any) => $.process.run(argv, options) } }, card.path!, item.rows[0]?.value !== '暫停'); await refresh($) }
-          catch (error) { $.ui.toast(`旗標更新失敗：${String(error)}`) }
+        const extra = card.id === 'pause-flag' ? <Button key={`toggle-${card.id}`} autoFocus label={item.rows[0]?.value === t('paused') ? t('resume') : t('pause')} onPress={async () => {
+          try { await setPaused({ fs: { write: (path: string, content: string) => $.fs.write(path, content) }, process: { run: (argv: string[], options: any) => $.process.run(argv, options) } }, card.path!, item.rows[0]?.value !== t('paused')); await refresh($) }
+          catch (error) { $.ui.toast(`${t('flagFailed')}: ${String(error)}`) }
         }} /> : null
-        return Card(ui, card.id, card.title || sources[card.id].title, item, width, extra)
+        const titleKey = { quota: 'quota', session: 'session', gpu: 'gpu', disk: 'disk', 'http-probe': 'httpProbe', 'pause-flag': 'pauseFlag' }[card.id] as Parameters<typeof t>[0]
+        return Card(ui, card.id, card.title || t(titleKey), item, width, extra)
       })}
-      {configError && Card(ui, 'config', '設定', { rows: [], error: configError }, width)}
+      {configError && Card(ui, 'config', t('config'), { rows: [], error: configError }, width)}
       {Svg && <Box><Svg alt="Dashboard status" width={12} height={12} source={'<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12"><circle cx="6" cy="6" r="4" fill="#38b46a"/></svg>'} /><Text dimColor> cc-dash-kit</Text></Box>}
       {e.surface !== 'desktop' && <Box>{StatusDot(ui, 'ok')}<Text dimColor>cc-dash-kit</Text></Box>}
     </Box>

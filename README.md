@@ -1,29 +1,45 @@
 # cc-dash-kit
 
-## INSTALL PROMPT（中文；整段貼給 Claude Code CLI 或 Desktop Code）
+Your Claude Code status, beside the conversation.
 
-> 請幫我安裝並試用 cc-dash-kit 看板。框架來源是 `<REPO_URL>`。如果它是本機目錄，直接用該目錄；如果是 Git repo 網址，先 clone 到目前工作目錄下的 `cc-dash-kit`。請在框架根目錄執行 `claude plugin validate .`，然後回到目前工作目錄，用 `claude plugin marketplace add --scope local <框架根目錄>` 和 `claude plugin install --scope local cc-dash-kit@cc-dash-kit-marketplace` 安裝。請重新載入 plugin；如需我手動輸入 `/reload-plugins`，請直接告訴我。先確認沒有 `dash.config.json` 時，零設定面板有 quota 和 session 兩張卡，必要時執行 `/cc-dash`；確認後才閱讀框架根目錄的 `ASSEMBLE.md`，依它的流程逐題問我三題、製作個人看板、再次 validate 和 test。寫好 config 後請我輸入 `/cc-dash` 立即重讀設定，並展示組裝後的面板。若任何步驟失敗，請修正並重試；不要讀取或搬移憑證。
+[繁體中文](README.zh-TW.md)
 
-## INSTALL PROMPT (English; paste the whole paragraph into Claude Code CLI or Desktop Code)
+> Install this Claude Code dashboard for me: https://github.com/coolthor/cc-dash-kit (follow INSTALL.md in the repo)
 
-> Please install and try the cc-dash-kit dashboard. The framework source is `<REPO_URL>`. If it is a local directory, use it directly; if it is a Git repository URL, clone it into `cc-dash-kit` under the current working directory. In the framework root, run `claude plugin validate .`, then return to the current working directory and install with `claude plugin marketplace add --scope local <framework-root>` and `claude plugin install --scope local cc-dash-kit@cc-dash-kit-marketplace`. Reload the plugin; if I must type `/reload-plugins` myself, tell me directly. Before creating `dash.config.json`, confirm the zero-config pane shows quota and session cards, and run `/cc-dash` if needed. Then read `ASSEMBLE.md` in the framework root, ask me exactly three questions one at a time, build my personal dashboard, and validate and test it again. After writing config, ask me to run `/cc-dash` to reload it immediately, then show the assembled pane. If a step fails, fix it and retry. Do not read or move credentials.
-
-A small Claude Code mod framework for a personal dashboard.
+Just install, no customization:
 
 ```sh
-git clone <this-repo-url> cc-dash-kit && claude --plugin-dir "$PWD/cc-dash-kit"
+claude plugin marketplace add coolthor/cc-dash-kit
+claude plugin install --scope user cc-dash-kit@cc-dash-kit
 ```
 
-With no `dash.config.json`, the pane shows exactly two cards: Claude subscription usage for the 5 hour and weekly windows, and the current session. If Claude Code has not supplied rate limit data yet, the quota card says “未提供”. Use `/cc-dash` to open the pane manually when it cannot auto place in a narrow terminal.
+User scope works across projects; use `--scope local` for a trial confined to one project. Reload plugins after installation. The terminal sidebar requires `/tui fullscreen`; [INSTALL.md](INSTALL.md) explains the consent step and Desktop Code behavior.
 
-To customize it, open this repo in Claude Code and say:
+## Make it yours with one sentence
 
-> 根據這個 repo 的框架和我的使用習慣，幫我製作看板
+> Make this dashboard fit the things I check while working.
 
-Claude should follow [ASSEMBLE.md](ASSEMBLE.md): detect local capabilities, ask three questions, select sources, write `dash.config.json`, then validate and test. `dash.config.example.json` shows the format. A sample with placeholder hosts is in `examples/`.
+Claude follows [ASSEMBLE.md](ASSEMBLE.md), asks three questions, and writes a local `dash.config.json`. The default quota and session cards remain useful without setup.
 
-## Safety and scope
+## Cards
 
-Claude Code mods run with the same permissions as Claude Code and have no sandbox. Review the code before loading. This framework reads `dash.config.json`, Claude Code's usage and session metadata, and only the local resources selected in configuration. The optional probes use `nvidia-smi`, `df`, or `curl`; the optional pause button writes or deletes its configured local flag file. No conversation history or transcript is read. No token or credential belongs in config. `pause_status` is a read only advisory tool; it does not enforce permissions over other AI systems.
+| Card | Needs | When unavailable |
+| --- | --- | --- |
+| Claude usage | Session usage data | Shows “Unavailable” until Claude supplies it |
+| Session | Current session metadata | Shows available fields |
+| GPU | `nvidia-smi` | Hidden |
+| Disk | `df` and a configured path | Shows a read error |
+| Endpoints | Configured HTTP URLs | Shows each endpoint as offline |
+| Dispatch pause | Configured local flag path | Hidden until configured |
 
-For development, run `claude plugin validate .` and `claude plugin test .`. `dash.config.json` is gitignored so a local endpoint list is not committed accidentally.
+## Safety
+
+The mod runs with Claude Code permissions. Review its code before installing. It reads session metadata and only the local resources you configure. Endpoint checks have short timeouts. The pause button changes only its configured local flag file; `pause_status` is advisory. Keep credentials out of config.
+
+## Development
+
+Run `claude plugin validate .` and `claude plugin test .`. See [dash.config.example.json](dash.config.example.json) for the config shape. Local `dash.config.json` is gitignored.
+
+## License
+
+[MIT](LICENSE) © coolthor.

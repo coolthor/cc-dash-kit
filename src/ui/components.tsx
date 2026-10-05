@@ -25,7 +25,7 @@ export function Row(ui: any, row: RowData, bodyColumns: number, key: string) {
 
 export function List(ui: any, data: CardData, bodyColumns: number) {
   const { Box, Text } = ui
-  return <Box flexDirection="column">
+  return <Box flexDirection="column" width={Math.max(1, bodyColumns - 4)}>
     {data.error ? <Text color="red">{data.error}</Text> : data.rows.map((row, i) => Row(ui, row, bodyColumns, String(i)))}
     {data.note && bodyColumns >= 35 && <Text dimColor wrap="truncate-end">{data.note}</Text>}
   </Box>
@@ -33,7 +33,7 @@ export function List(ui: any, data: CardData, bodyColumns: number) {
 
 export function Card(ui: any, id: string, title: string, data: CardData, bodyColumns: number, extra?: any) {
   const { Box, Text } = ui
-  return <Box key={`card-${id}`} flexDirection="column" borderStyle="round" borderColor={data.error ? 'red' : 'blue'} paddingX={1}>
+  return <Box key={`card-${id}`} width={bodyColumns} flexDirection="column" borderStyle="round" borderColor={data.error ? 'red' : 'blue'} paddingX={1}>
     <Box justifyContent="space-between"><Text bold>{title}</Text>{extra}</Box>
     {List(ui, data, bodyColumns)}
   </Box>
