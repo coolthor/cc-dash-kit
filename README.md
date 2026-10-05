@@ -1,5 +1,13 @@
 # cc-dash-kit
 
+## INSTALL PROMPT（中文；整段貼給 Claude Code CLI 或 Desktop Code）
+
+> 請幫我安裝並試用 cc-dash-kit 看板。框架來源是 `<REPO_URL>`。如果它是本機目錄，直接用該目錄；如果是 Git repo 網址，先 clone 到目前工作目錄下的 `cc-dash-kit`。請在框架根目錄執行 `claude plugin validate .`，然後回到目前工作目錄，用 `claude plugin marketplace add --scope local <框架根目錄>` 和 `claude plugin install --scope local cc-dash-kit@cc-dash-kit-marketplace` 安裝。請重新載入 plugin；如需我手動輸入 `/reload-plugins`，請直接告訴我。先確認沒有 `dash.config.json` 時，零設定面板有 quota 和 session 兩張卡，必要時執行 `/cc-dash`；確認後才閱讀框架根目錄的 `ASSEMBLE.md`，依它的流程逐題問我三題、製作個人看板、再次 validate 和 test，並展示組裝後的面板。若任何步驟失敗，請修正並重試；不要讀取或搬移憑證。
+
+## INSTALL PROMPT (English; paste the whole paragraph into Claude Code CLI or Desktop Code)
+
+> Please install and try the cc-dash-kit dashboard. The framework source is `<REPO_URL>`. If it is a local directory, use it directly; if it is a Git repository URL, clone it into `cc-dash-kit` under the current working directory. In the framework root, run `claude plugin validate .`, then return to the current working directory and install with `claude plugin marketplace add --scope local <framework-root>` and `claude plugin install --scope local cc-dash-kit@cc-dash-kit-marketplace`. Reload the plugin; if I must type `/reload-plugins` myself, tell me directly. Before creating `dash.config.json`, confirm the zero-config pane shows quota and session cards, and run `/cc-dash` if needed. Then read `ASSEMBLE.md` in the framework root, ask me exactly three questions one at a time, build my personal dashboard, validate and test it again, and show the assembled pane. If a step fails, fix it and retry. Do not read or move credentials.
+
 A small Claude Code mod framework for a personal dashboard.
 
 ```sh

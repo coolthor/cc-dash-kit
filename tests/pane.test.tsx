@@ -31,6 +31,7 @@ test('empty config draws only quota and session on both surfaces', async ($, on)
     expect(tree.includes('card-gpu')).toEqual(false)
     expect(tree.includes('card-disk')).toEqual(false)
     expect(tree.includes('讀取失敗')).toEqual(false)
+    expect(tree.includes('Dashboard status')).toEqual(surface === 'desktop')
     await ui.unmount()
   }
 })

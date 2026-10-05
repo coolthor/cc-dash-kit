@@ -1,0 +1,12 @@
+{
+  "name": "cc-dash-kit-marketplace",
+  "description": "Install the cc-dash-kit dashboard mod",
+  "owner": { "name": "cc-dash-kit contributors" },
+  "plugins": [
+    {
+      "name": "cc-dash-kit",
+      "source": ".",
+      "description": "Composable local dashboard for Claude Code"
+    }
+  ]
+}
