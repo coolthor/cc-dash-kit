@@ -15,6 +15,7 @@ let configError: string | null = null
 let started = false
 let pauseToolRegistered = false
 let detectedLocale: 'en' | 'zh-TW' = 'en'
+let paneCanDock = false
 
 async function loadConfig($: any) {
   const path = `${$.plugin.root}/dash.config.json`
@@ -82,9 +83,10 @@ async function start($: any) {
 
 export const register: Register = on => {
   on('session.start', async ($, e, next) => {
+    paneCanDock = Boolean(e.viewport?.isFullscreen || e.surface === 'desktop')
     await $.command.register({ name: 'cc-dash', description: 'Open the dashboard' })
     await start($)
-    if (e.viewport?.isFullscreen || e.surface === 'desktop')
+    if (paneCanDock)
       void $.ui.open({ id: PANE, title: t('dashboard'), placement: 'dock' }).catch(() => {})
     return next(e)
   })
@@ -93,7 +95,7 @@ export const register: Register = on => {
     await start($)
     await refresh($)
     await $.ui.close({ id: PANE })
-    const fullscreen = e.viewport?.isFullscreen || e.surface === 'desktop'
+    const fullscreen = Boolean(e.viewport?.isFullscreen || e.surface === 'desktop' || paneCanDock)
     const result = await $.ui.open({ id: PANE, title: t('dashboard'), placement: fullscreen ? 'dock' : 'inline', focus: true })
     return { text: fullscreen ? (result.isPlaced ? t('opened') : `${t('waiting')}: ${result.reason || 'pane unavailable'}`) : t('fullscreenHint') }
   })
