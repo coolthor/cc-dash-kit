@@ -17,6 +17,8 @@ let pauseToolRegistered = false
 let detectedLocale: 'en' | 'zh-TW' = 'en'
 let paneCanDock = false
 let inlineHintShown = false
+let fullscreenFromEnv = false
+let autoOpened = false
 
 async function loadConfig($: any) {
   const path = `${$.plugin.root}/dash.config.json`
@@ -73,6 +75,30 @@ async function detectLocale($: any): Promise<'en' | 'zh-TW'> {
   return 'en'
 }
 
+async function envIsFullscreen($: any) {
+  try {
+    const [enabled, disabled] = await Promise.all([
+      $.process.run(['printenv', 'CLAUDE_CODE_NO_FLICKER'], { timeoutMs: 1000 }),
+      $.process.run(['printenv', 'CLAUDE_CODE_DISABLE_ALTERNATE_SCREEN'], { timeoutMs: 1000 }),
+    ])
+    return enabled.stdout.trim() === '1' && disabled.stdout.trim() !== '1'
+  } catch { return false }
+}
+
+function canDock(e: any) {
+  if (e.surface === 'desktop') return true
+  if (e.viewport?.isFullscreen !== undefined) return e.viewport.isFullscreen === true
+  return e.surface === 'terminal' && fullscreenFromEnv
+}
+
+async function autoOpen($: any, e: any) {
+  if (autoOpened || !canDock(e)) return
+  autoOpened = true
+  paneCanDock = true
+  try { await $.ui.open({ id: PANE, title: t('dashboard') }) }
+  catch { autoOpened = false }
+}
+
 async function start($: any) {
   if (started) return
   started = true
@@ -84,21 +110,24 @@ async function start($: any) {
 
 export const register: Register = on => {
   on('session.start', async ($, e, next) => {
-    paneCanDock = Boolean(e.viewport?.isFullscreen || e.surface === 'desktop')
+    fullscreenFromEnv = await envIsFullscreen($)
+    paneCanDock = canDock(e)
     inlineHintShown = false
+    autoOpened = false
     await $.command.register({ name: 'cc-dash', description: 'Open the dashboard' })
     await start($)
-    if (paneCanDock)
-      void $.ui.open({ id: PANE, title: t('dashboard') }).catch(() => {})
+    void autoOpen($, e)
     return next(e)
   })
 
   on('session.attach', async ($, e, next) => {
-    if (e.viewport?.isFullscreen || e.surface === 'desktop') {
-      paneCanDock = true
-      await start($)
-      void $.ui.open({ id: PANE, title: t('dashboard') }).catch(() => {})
-    }
+    await start($)
+    void autoOpen($, e)
+    return next(e)
+  })
+
+  on('prompt.submit', async ($, e, next) => {
+    void autoOpen($, e)
     return next(e)
   })
 
@@ -107,6 +136,7 @@ export const register: Register = on => {
     await refresh($)
     await $.ui.close({ id: PANE })
     const result = await $.ui.open({ id: PANE, title: t('dashboard'), focus: true })
+    if (result.isPlaced) autoOpened = true
     return { text: result.isPlaced ? t('opened') : `${t('waiting')}: ${result.reason || 'pane unavailable'}` }
   })
 
@@ -121,6 +151,7 @@ export const register: Register = on => {
 
   on('turn.complete', async ($, e, next) => {
     if (!e.agentId) void refresh($)
+    void autoOpen($, e)
     return next(e)
   })
 
