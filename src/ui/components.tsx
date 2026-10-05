@@ -33,7 +33,7 @@ export function List(ui: any, data: CardData, bodyColumns: number) {
 
 export function Card(ui: any, id: string, title: string, data: CardData, bodyColumns: number, extra?: any) {
   const { Box, Text } = ui
-  return <Box key={`card-${id}`} width={bodyColumns} flexDirection="column" borderStyle="round" borderColor={data.error ? 'red' : 'blue'} paddingX={1}>
+  return <Box key={`card-${id}`} width={Math.max(12, bodyColumns - 1)} flexDirection="column" borderStyle="round" borderColor={data.error ? 'red' : 'blue'} paddingX={1}>
     <Box justifyContent="space-between"><Text bold>{title}</Text>{extra}</Box>
     {List(ui, data, bodyColumns)}
   </Box>

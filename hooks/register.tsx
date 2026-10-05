@@ -16,6 +16,7 @@ let started = false
 let pauseToolRegistered = false
 let detectedLocale: 'en' | 'zh-TW' = 'en'
 let paneCanDock = false
+let inlineHintShown = false
 
 async function loadConfig($: any) {
   const path = `${$.plugin.root}/dash.config.json`
@@ -84,20 +85,20 @@ async function start($: any) {
 export const register: Register = on => {
   on('session.start', async ($, e, next) => {
     paneCanDock = Boolean(e.viewport?.isFullscreen || e.surface === 'desktop')
+    inlineHintShown = false
     await $.command.register({ name: 'cc-dash', description: 'Open the dashboard' })
     await start($)
     if (paneCanDock)
-      void $.ui.open({ id: PANE, title: t('dashboard'), placement: 'dock' }).catch(() => {})
+      void $.ui.open({ id: PANE, title: t('dashboard') }).catch(() => {})
     return next(e)
   })
 
-  on('command.run', { command: 'cc-dash' }, async ($, e) => {
+  on('command.run', { command: 'cc-dash' }, async $ => {
     await start($)
     await refresh($)
     await $.ui.close({ id: PANE })
-    const fullscreen = Boolean(e.viewport?.isFullscreen || e.surface === 'desktop' || paneCanDock)
-    const result = await $.ui.open({ id: PANE, title: t('dashboard'), placement: fullscreen ? 'dock' : 'inline', focus: true })
-    return { text: fullscreen ? (result.isPlaced ? t('opened') : `${t('waiting')}: ${result.reason || 'pane unavailable'}`) : t('fullscreenHint') }
+    const result = await $.ui.open({ id: PANE, title: t('dashboard'), focus: true })
+    return { text: result.isPlaced ? t('opened') : `${t('waiting')}: ${result.reason || 'pane unavailable'}` }
   })
 
   on('tool.call', { tool: 'mcp__cc-dash-kit__pause_status' }, async $ => {
@@ -115,6 +116,11 @@ export const register: Register = on => {
   })
 
   on('ui.render', { component: 'Pane', requestId: PANE }, async ($, e) => {
+    paneCanDock = e.props.placement === 'dock'
+    if (e.props.placement === 'inline' && !inlineHintShown) {
+      inlineHintShown = true
+      $.ui.toast(t('fullscreenHint'))
+    }
     const ui = $.ui.resolve(e)
     const { Box, Text, Button } = ui
     const Svg = e.surface === 'desktop' ? (ui as any).Svg : undefined

@@ -6,7 +6,7 @@ const PANE = {
   props: { title: 'Dashboard', isFocused: true, bodyColumns: 48, placement: 'inline', scroll: { offset: 0, bodyRows: 20 }, view: {} },
 } as const
 
-function base(on: any, config?: unknown) {
+function base(on: any, config?: unknown, opens?: any[]) {
   mock.clock(on)
   on('fs.exists', (_: any, e: any) => ({ value: !!config && e.path.endsWith('/dash.config.json') }))
   if (config) on('fs.read', () => ({ value: JSON.stringify(config) }))
@@ -15,7 +15,7 @@ function base(on: any, config?: unknown) {
   on('session.cwd', () => ({ value: '/work/project' }))
   on('command.register', () => ({ value: undefined }))
   on('tool.register', () => ({ value: undefined }))
-  on('ui.open', () => ({ value: { isPlaced: true } }))
+  on('ui.open', (_: any, e: any) => { opens?.push(e); return { value: { isPlaced: true } } })
   on('ui.close', () => ({ value: undefined }))
   on('session.start', () => ({}))
 }
@@ -114,5 +114,16 @@ test('Chinese LANG draws Chinese zero-config labels', async ($, on) => {
   expect(tree.includes('Claude 額度')).toEqual(true)
   expect(tree.includes('5 小時')).toEqual(true)
   expect(tree.includes('Current session')).toEqual(false)
+  await ui.unmount()
+})
+
+
+test('desktop surface draws with dock placement', async ($, on) => {
+  base(on)
+  await $.command.run({ command: 'cc-dash', args: '' })
+  const ui = await $.ui.mount({ ...PANE, surface: 'desktop', props: { ...PANE.props, placement: 'dock' } })
+  const tree = JSON.stringify(await ui.drawn())
+  expect(tree.includes('card-quota')).toEqual(true)
+  expect(tree.includes('Dashboard status')).toEqual(true)
   await ui.unmount()
 })
