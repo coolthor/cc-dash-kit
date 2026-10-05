@@ -1,6 +1,6 @@
 # cc-dash-kit
 
-> 幫我安裝這個 Claude Code 看板：https://github.com/coolthor/cc-dash-kit（照 repo 裡的 INSTALL.md 做）
+> 幫我安裝這個 Claude Code 看板：https://github.com/coolthor/cc-dash-kit
 
 讓 Claude Code 的工作狀態陪在對話旁邊。 · [English](README.md)
 
