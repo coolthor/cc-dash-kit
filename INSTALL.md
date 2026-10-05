@@ -1,6 +1,6 @@
 # Install cc-dash-kit
 
-This guide is for Claude Code CLI and the local or SSH sessions in Claude Desktop's Code tab. Use the user's conversation language throughout.
+This guide is for Claude Code CLI and the local or SSH sessions in Claude Desktop's Code tab. Use the user's conversation language throughout: a Chinese installation request needs Traditional Chinese replies and customization questions, even if project instructions are in English.
 
 1. Read this repository's marketplace manifest, plugin manifest, and this guide from `https://github.com/coolthor/cc-dash-kit`. Add the GitHub marketplace with `claude plugin marketplace add coolthor/cc-dash-kit`, then install with `claude plugin install --scope user cc-dash-kit@cc-dash-kit`. In a Claude Code session, `/plugin marketplace add coolthor/cc-dash-kit` followed by `/plugin install cc-dash-kit@cc-dash-kit` is equivalent. Use `--scope local` for a temporary project trial; user scope makes it available across projects. Do not install from a local checkout.
 2. Reload plugins. If an interactive command is needed, ask the user to run `/reload-plugins`. Check the installed plugin appears and run `/cc-dash` if needed.
