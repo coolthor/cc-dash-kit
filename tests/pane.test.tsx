@@ -47,3 +47,23 @@ test('one failing optional source does not hide the default cards', async ($, on
   expect(tree.includes('card-gpu')).toEqual(false)
   await ui.unmount()
 })
+
+test('opening the pane reloads a config written after session start', async ($, on) => {
+  let config: unknown = null
+  mock.clock(on)
+  on('fs.exists', (_: any, e: any) => ({ value: !!config && e.path.endsWith('/dash.config.json') }))
+  on('fs.read', () => ({ value: JSON.stringify(config) }))
+  on('session.usage', () => ({ value: { rateLimits: [], context: { percent: 0 } } }))
+  on('session.id', () => ({ value: 'sample-session-id' }))
+  on('session.cwd', () => ({ value: '/work/project' }))
+  on('command.register', () => ({ value: undefined }))
+  on('ui.open', () => ({ value: { isPlaced: true } }))
+  on('process.run', (_: any, e: any) => ({ value: { exitCode: 0, stdout: e.argv[1] === '--help' ? 'help' : 'Trial GPU, 2048, 8192', stderr: '' } }))
+  on('session.start', () => ({}))
+  await $.command.run({ command: 'cc-dash', args: '' })
+  config = { cards: [{ id: 'quota' }, { id: 'session' }, { id: 'gpu' }] }
+  await $.command.run({ command: 'cc-dash', args: '' })
+  const ui = await $.ui.mount({ ...PANE, surface: 'terminal' })
+  expect(JSON.stringify(await ui.drawn()).includes('card-gpu')).toEqual(true)
+  await ui.unmount()
+})

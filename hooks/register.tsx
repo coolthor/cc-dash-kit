@@ -13,6 +13,7 @@ const snapshot = atom({ plugin: 'cc-dash-kit', key: 'snapshot' } as const, {} as
 let config: DashConfig = DEFAULT_CONFIG
 let configError: string | null = null
 let started = false
+let pauseToolRegistered = false
 
 async function loadConfig($: any) {
   const path = `${$.plugin.root}/dash.config.json`
@@ -41,6 +42,15 @@ async function sampleOne($: any, card: SourceConfig): Promise<CardData | null> {
 }
 
 async function refresh($: any) {
+  try { config = await loadConfig($); configError = null }
+  catch (error) {
+    config = DEFAULT_CONFIG
+    configError = `設定錯誤：${String(error).slice(0, 100)}`
+  }
+  if (config.cards.some(card => card.id === 'pause-flag') && !pauseToolRegistered) {
+    await registerPauseTool($)
+    pauseToolRegistered = true
+  }
   const pairs = await Promise.all(config.cards.map(async card => [card.id, await sampleOne($, card)] as const))
   await update($, snapshot, () => Object.fromEntries(pairs.filter(([, data]) => data !== null)))
 }
@@ -48,11 +58,6 @@ async function refresh($: any) {
 async function start($: any) {
   if (started) return
   started = true
-  try { config = await loadConfig($); configError = null }
-  catch (error) {
-    config = DEFAULT_CONFIG
-    configError = `設定錯誤：${String(error).slice(0, 100)}`
-  }
   void refresh($)
   $.clock.every(config.refreshMs, () => void refresh($))
 }
@@ -61,13 +66,13 @@ export const register: Register = on => {
   on('session.start', async ($, e, next) => {
     await $.command.register({ name: 'cc-dash', description: 'Open the dashboard' })
     await start($)
-    if (config.cards.some(card => card.id === 'pause-flag')) await registerPauseTool($)
     void $.ui.open({ id: PANE, title: 'Dashboard' }).catch(() => {})
     return next(e)
   })
 
   on('command.run', { command: 'cc-dash' }, async $ => {
     await start($)
+    await refresh($)
     const result = await $.ui.open({ id: PANE, title: 'Dashboard' })
     return { text: result.isPlaced ? 'Dashboard opened.' : `Dashboard waiting: ${result.reason || 'pane unavailable'}` }
   })
