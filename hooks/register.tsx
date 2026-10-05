@@ -93,6 +93,15 @@ export const register: Register = on => {
     return next(e)
   })
 
+  on('session.attach', async ($, e, next) => {
+    if (e.viewport?.isFullscreen || e.surface === 'desktop') {
+      paneCanDock = true
+      await start($)
+      void $.ui.open({ id: PANE, title: t('dashboard') }).catch(() => {})
+    }
+    return next(e)
+  })
+
   on('command.run', { command: 'cc-dash' }, async $ => {
     await start($)
     await refresh($)
