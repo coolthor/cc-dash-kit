@@ -1,0 +1,11 @@
+{
+  "refreshMs": 30000,
+  "cards": [
+    { "id": "quota" },
+    { "id": "session" },
+    { "id": "gpu" },
+    { "id": "disk", "path": "/" },
+    { "id": "http-probe", "title": "Inference", "url": "http://gpu-box.local:8000/v1/models" },
+    { "id": "pause-flag", "title": "Inference dispatch", "path": "/tmp/cc-dash-inference-paused" }
+  ]
+}

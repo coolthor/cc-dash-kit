@@ -1,0 +1,10 @@
+{
+  "refreshMs": 30000,
+  "cards": [
+    { "id": "quota" },
+    { "id": "session" },
+    { "id": "disk", "path": "/" },
+    { "id": "gpu" },
+    { "id": "http-probe", "title": "Local model", "url": "http://localhost:11434/api/tags" }
+  ]
+}

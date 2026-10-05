@@ -1,0 +1,1 @@
+{ "name": "cc-dash-kit", "version": "0.1.0", "description": "Composable local dashboard for Claude Code", "author": { "name": "cc-dash-kit contributors" }, "types": "./types/index.d.ts" }
