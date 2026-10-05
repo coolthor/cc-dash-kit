@@ -73,7 +73,8 @@ export const register: Register = on => {
   on('command.run', { command: 'cc-dash' }, async $ => {
     await start($)
     await refresh($)
-    const result = await $.ui.open({ id: PANE, title: 'Dashboard' })
+    await $.ui.close({ id: PANE })
+    const result = await $.ui.open({ id: PANE, title: 'Dashboard', focus: true })
     return { text: result.isPlaced ? 'Dashboard opened.' : `Dashboard waiting: ${result.reason || 'pane unavailable'}` }
   })
 
@@ -101,7 +102,7 @@ export const register: Register = on => {
       {config.cards.map(card => {
         const item = data[card.id]
         if (!item) return null
-        const extra = card.id === 'pause-flag' ? <Button key={`toggle-${card.id}`} label={item.rows[0]?.value === '暫停' ? '恢復' : '暫停'} onPress={async () => {
+        const extra = card.id === 'pause-flag' ? <Button key={`toggle-${card.id}`} autoFocus label={item.rows[0]?.value === '暫停' ? '恢復' : '暫停'} onPress={async () => {
           try { await setPaused({ fs: { write: (path: string, content: string) => $.fs.write(path, content) }, process: { run: (argv: string[], options: any) => $.process.run(argv, options) } }, card.path!, item.rows[0]?.value !== '暫停'); await refresh($) }
           catch (error) { $.ui.toast(`旗標更新失敗：${String(error)}`) }
         }} /> : null

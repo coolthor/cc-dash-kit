@@ -16,6 +16,7 @@ function base(on: any, config?: unknown) {
   on('command.register', () => ({ value: undefined }))
   on('tool.register', () => ({ value: undefined }))
   on('ui.open', () => ({ value: { isPlaced: true } }))
+  on('ui.close', () => ({ value: undefined }))
   on('session.start', () => ({}))
 }
 
@@ -58,6 +59,7 @@ test('opening the pane reloads a config written after session start', async ($, 
   on('session.cwd', () => ({ value: '/work/project' }))
   on('command.register', () => ({ value: undefined }))
   on('ui.open', () => ({ value: { isPlaced: true } }))
+  on('ui.close', () => ({ value: undefined }))
   on('process.run', (_: any, e: any) => ({ value: { exitCode: 0, stdout: e.argv[1] === '--help' ? 'help' : 'Trial GPU, 2048, 8192', stderr: '' } }))
   on('session.start', () => ({}))
   await $.command.run({ command: 'cc-dash', args: '' })
@@ -65,5 +67,15 @@ test('opening the pane reloads a config written after session start', async ($, 
   await $.command.run({ command: 'cc-dash', args: '' })
   const ui = await $.ui.mount({ ...PANE, surface: 'terminal' })
   expect(JSON.stringify(await ui.drawn()).includes('card-gpu')).toEqual(true)
+  await ui.unmount()
+})
+
+test('pause button receives keyboard focus in the opened pane', async ($, on) => {
+  base(on, { cards: [{ id: 'pause-flag', path: '/tmp/ccdk-paused' }] })
+  await $.command.run({ command: 'cc-dash', args: '' })
+  const ui = await $.ui.mount({ ...PANE, surface: 'terminal' })
+  const tree = JSON.stringify(await ui.drawn())
+  expect(tree.includes('toggle-pause-flag')).toEqual(true)
+  expect(tree.includes('"autoFocus":true')).toEqual(true)
   await ui.unmount()
 })
