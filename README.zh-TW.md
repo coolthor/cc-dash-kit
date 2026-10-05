@@ -1,10 +1,14 @@
 # cc-dash-kit
 
-讓 Claude Code 的工作狀態陪在對話旁邊。
-
-[English](README.md)
-
 > 幫我安裝這個 Claude Code 看板：https://github.com/coolthor/cc-dash-kit（照 repo 裡的 INSTALL.md 做）
+
+讓 Claude Code 的工作狀態陪在對話旁邊。 · [English](README.md)
+
+![Claude Code 對話右側的中文看板側邊欄](docs/images/terminal-zh-TW.png)
+
+## 一句話安裝
+
+把上面那句貼給 Claude Code。它會依照 [INSTALL.md](INSTALL.md) 安裝，切換終端機版面前先徵求同意，完成後再詢問要不要客製。
 
 只想安裝、不客製：
 
@@ -20,6 +24,10 @@ claude plugin install --scope user cc-dash-kit@cc-dash-kit
 > 依照我平常查看的資訊，幫我客製這個看板。
 
 Claude 會照 [ASSEMBLE.md](ASSEMBLE.md) 問三題，將設定寫進本機 `dash.config.json`。不設定也有額度與 session 兩張卡。
+
+| 客製前：零設定即可使用 | 客製後：GPU 與兩個本機服務 |
+| --- | --- |
+| ![中文零設定看板，含額度和 Session 卡](docs/images/before-zh-TW.png) | ![中文客製看板，含 GPU 與兩個本機服務](docs/images/after-zh-TW.png) |
 
 ## 卡片
 
