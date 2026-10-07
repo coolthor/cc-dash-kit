@@ -1,0 +1,7 @@
+{
+  "name": "image-peek",
+  "version": "0.3.2",
+  "description": "Shows a thumbnail of each pasted image under the prompt you pasted it into",
+  "author": { "name": "coolthor" },
+  "types": "./types/index.d.ts"
+}

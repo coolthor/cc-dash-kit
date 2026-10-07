@@ -42,6 +42,16 @@ Claude follows [ASSEMBLE.md](ASSEMBLE.md), asks three questions, and writes a lo
 | Endpoints | Configured HTTP URLs | Shows each endpoint as offline |
 | Dispatch pause | Configured local flag path | Hidden until configured |
 
+## Also in this repo: image-peek
+
+A second mod in this repo. It shows a thumbnail of each pasted image directly under the prompt you pasted it into, instead of a bare `[Image #1]`.
+
+```sh
+claude plugin install --scope user image-peek@cc-dash-kit
+```
+
+Requires a terminal that supports the kitty graphics protocol (Ghostty or kitty, for example) and Python 3 with Pillow (`python3 -m pip install Pillow`). In other terminals, a one-line note appears where the thumbnail would be. Thumbnails are written to your system temp folder and never leave your machine.
+
 ## Safety
 
 The mod runs with Claude Code permissions. Review its code before installing. It reads session metadata and only the local resources you configure. Endpoint checks have short timeouts. The pause button changes only its configured local flag file; `pause_status` is advisory. Never put credentials in the config.

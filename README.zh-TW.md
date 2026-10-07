@@ -40,6 +40,16 @@ Claude 會照 [ASSEMBLE.md](ASSEMBLE.md) 問三題，將設定寫進本機 `dash
 | 端點 | 設定的 HTTP 網址 | 逐一顯示離線 |
 | 派工暫停 | 設定的本機旗標路徑 | 未設定時隱藏 |
 
+## 同一個 repo 的另一個 mod：image-peek
+
+貼圖之後，在你那則訊息正下方畫出縮圖，不再只看到一行 `[Image #1]`。
+
+```sh
+claude plugin install --scope user image-peek@cc-dash-kit
+```
+
+終端機要支援 kitty 圖形協定(例如 Ghostty、kitty)，另外需要 Python 3 和 Pillow(`python3 -m pip install Pillow`)。其他終端機會在縮圖的位置顯示一行說明。縮圖只寫在本機的系統暫存資料夾，不會上傳到任何地方。
+
 ## 安全
 
 Mod 與 Claude Code 具有相同權限，安裝前請檢視原始碼。它讀取 session 資訊與你指定的本機資源；端點探測有短逾時。暫停按鈕只變更指定的本機旗標，`pause_status` 只是提醒。不要把憑證寫進設定。
