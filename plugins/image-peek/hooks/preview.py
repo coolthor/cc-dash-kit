@@ -13,7 +13,7 @@ import tempfile
 try:
     from PIL import Image
 except ImportError:
-    sys.exit('image-peek needs Pillow: python3 -m pip install Pillow')
+    sys.exit('Pillow is not installed: python3 -m pip install Pillow')
 
 MAX_SIDE = 1024
 

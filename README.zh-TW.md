@@ -42,13 +42,13 @@ Claude 會照 [ASSEMBLE.md](ASSEMBLE.md) 問三題，將設定寫進本機 `dash
 
 ## 同一個 repo 的另一個 mod：image-peek
 
-貼圖之後，在你那則訊息正下方畫出縮圖，不再只看到一行 `[Image #1]`。
+貼圖之後，在你那則訊息正下方畫出縮圖，不再只看到一行 `[Image #1]`。支援 Ghostty 和 kitty，需要 Python 3 和 Pillow。
 
 ```sh
 claude plugin install --scope user image-peek@cc-dash-kit
 ```
 
-終端機要支援 kitty 圖形協定(例如 Ghostty、kitty)，另外需要 Python 3 和 Pillow(`python3 -m pip install Pillow`)。其他終端機會在縮圖的位置顯示一行說明。縮圖只寫在本機的系統暫存資料夾，不會上傳到任何地方。
+需要什麼、其他終端機會怎樣、隱私和疑難排解：[plugins/image-peek/README.zh-TW.md](plugins/image-peek/README.zh-TW.md)。
 
 ## 安全
 

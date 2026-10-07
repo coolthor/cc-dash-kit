@@ -44,13 +44,13 @@ Claude follows [ASSEMBLE.md](ASSEMBLE.md), asks three questions, and writes a lo
 
 ## Also in this repo: image-peek
 
-A second mod in this repo. It shows a thumbnail of each pasted image directly under the prompt you pasted it into, instead of a bare `[Image #1]`.
+A second mod that shows a thumbnail of each pasted image directly under the prompt you pasted it into, instead of a bare `[Image #1]`. Works in Ghostty and kitty; needs Python 3 with Pillow.
 
 ```sh
 claude plugin install --scope user image-peek@cc-dash-kit
 ```
 
-Requires a terminal that supports the kitty graphics protocol (Ghostty or kitty, for example) and Python 3 with Pillow (`python3 -m pip install Pillow`). In other terminals, a one-line note appears where the thumbnail would be. Thumbnails are written to your system temp folder and never leave your machine.
+Requirements, behavior in other terminals, privacy, and troubleshooting: [plugins/image-peek/README.md](plugins/image-peek/README.md).
 
 ## Safety
 

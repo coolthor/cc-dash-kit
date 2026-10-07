@@ -1,7 +1,8 @@
 import { atom, read, update } from 'claude-code'
 import type { EngineInterface as Engine, Register } from 'claude-code'
 
-type Shot = { png: string; width: number; height: number }
+// via: 'path' for a pasted file, 'bytes' for image data inside the prompt
+type Shot = { png: string; width: number; height: number; via: 'path' | 'bytes' }
 
 const MAX_MESSAGES = 30
 // An attachment row and its prompt can arrive in either order; pair them within this window
@@ -50,17 +51,17 @@ export async function collectShots($: Engine, e: { door: string; uuid: string; m
   const text = blocks.map(b => b.text ?? '').join('\n')
   const paths = [...text.matchAll(/\[Image: source: ([^\]]+)\]/g)].map(m => (m[1] ?? '').trim())
   // A pasted file brings its path; a clipboard paste brings only the bytes inside the prompt
-  const inputs: { arg: string; stdin?: string }[] = paths.length
-    ? paths.map(arg => ({ arg }))
+  const inputs: { arg: string; stdin?: string; via: Shot['via'] }[] = paths.length
+    ? paths.map(arg => ({ arg, via: 'path' as const }))
     : isPrompt
-      ? blocks.filter(b => b.type === 'image' && b.source?.type === 'base64' && b.source.data).map(b => ({ arg: '-', stdin: b.source?.data as string }))
+      ? blocks.filter(b => b.type === 'image' && b.source?.type === 'base64' && b.source.data).map(b => ({ arg: '-', stdin: b.source?.data as string, via: 'bytes' as const }))
       : []
   const script = `${$.plugin.root}/hooks/preview.py`
   const found: Shot[] = []
   for (const input of inputs) {
     const r = await $.process.run(['python3', script, input.arg], { timeoutMs: 15_000, ...(input.stdin ? { stdin: input.stdin } : {}) })
     if (r.exitCode !== 0) { $.ui.log(`image-peek: ${r.stderr.trim() || `exit ${r.exitCode}`}`); continue }
-    found.push(JSON.parse(r.stdout) as Shot)
+    found.push({ ...JSON.parse(r.stdout) as Omit<Shot, 'via'>, via: input.via })
   }
   if (isPrompt) {
     // Claim images from an attachment row that arrived first
@@ -81,9 +82,9 @@ export async function collectShots($: Engine, e: { door: string; uuid: string; m
 async function attach($: Engine, target: string, found: Shot[]) {
   if (!found.length) return
   await update($, shots, all => {
-    // The same image can come both as a path and as bytes: keep the first, matched by size
+    // The same image can arrive twice, once as a path and once as bytes: drop the second copy, matched by size
     const merged = [...(all?.[target] ?? [])]
-    for (const f of found) if (!merged.some(s => s.png === f.png || (s.width === f.width && s.height === f.height))) merged.push(f)
+    for (const f of found) if (!merged.some(s => s.png === f.png || (s.via !== f.via && s.width === f.width && s.height === f.height))) merged.push(f)
     const next = { ...all, [target]: merged }
     const keys = Object.keys(next)
     for (const k of keys.slice(0, Math.max(0, keys.length - MAX_MESSAGES))) delete next[k]
